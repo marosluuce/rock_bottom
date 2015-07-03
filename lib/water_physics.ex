@@ -1,23 +1,25 @@
 defmodule WaterPhysics do
-  def flow_right(world, {col, row}) do
-    flow(world, {col+1, row})
+
+	def flow(world) do
+		case flowable_down(world) do
+			[cell] -> cell
+			other  -> world
+								|> flowable_right
+								|> Enum.max_by(fn ({_, y}) -> y end)
+		end
   end
 
-  def flow_down(world, {col, row}) do
-    flow(world, {col, row+1})
-  end
+	defp flowing([water: water, space: space, rock: _], flow_direction) do
+		water
+		|> Enum.map(flow_direction)
+		|> Enum.filter(fn (el) -> Enum.member?(space, el) end)
+	end
 
-  defp flow(world, element) do
-    world
-     |> update_water(element)
-     |> update_space(element)
-  end
+	defp flowable_right(world) do
+		flowing(world, fn ({x, y}) -> {x + 1, y} end)
+	end
 
-  defp update_water(world, element) do
-    Keyword.update!(world, :water, fn(_) -> [element | world[:water]] end)
-  end
-
-  defp update_space(world, element) do
-    Keyword.update!(world, :space, fn(_) -> List.delete(world[:space], element) end)
-  end
+	defp flowable_down(world) do
+		flowing(world, fn ({x, y}) -> {x, y + 1} end)
+	end
 end
