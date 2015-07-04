@@ -1,6 +1,14 @@
 defmodule WaterPhysics do
 
 	def flow(world) do
+		new_water = flow_into(world)
+
+		world
+		|> Keyword.update!(:water, &([new_water | &1]))
+		|> Keyword.update!(:space, &(List.delete(&1, new_water)))
+  end
+
+	def flow_into(world) do
 		case flowable_down(world) do
 			[cell] -> cell
 			other  -> world
